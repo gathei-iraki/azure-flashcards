@@ -177,7 +177,7 @@ export default function Home() {
   }, [cards, cardIndex, currentCard]);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
+    <main className="min-h-screen bg-slate-50  text-slate-900">
       <div className="mx-auto max-w-4xl">
         <p className="font-semibold text-blue-700">AZ-900 STUDY</p>
         <h1 className="mt-2 text-4xl font-bold">AzureRecall</h1>
