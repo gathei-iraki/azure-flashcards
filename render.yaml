@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: azurerecall
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health/
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: azurerecall
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: WEB_CONCURRENCY
+        value: "2"

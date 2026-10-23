@@ -113,12 +113,45 @@ Expected output after seeding is `5 25`.
 
 ## Frontend setup
 
-The frontend is the untouched `create-next-app` starter requested for initialization only.
+The frontend includes responsive deck browsing, animated flashcard study, and a quick quiz view. It uses `NEXT_PUBLIC_API_BASE_URL` when set and otherwise connects to `http://127.0.0.1:8000/api`.
 
 ```bash
 cd frontend
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. No AzureRecall frontend screens or API client have been added yet.
+Open `http://localhost:3000`. Start the Django server separately so the frontend can load decks and cards.
+
+## Deploy on Render as one Docker service
+
+The production image builds the Next.js frontend as static files, copies them into the Python image, and serves the complete site through Django, WhiteNoise, and Gunicorn. The frontend and API therefore use one domain.
+
+1. Push this repository to GitHub.
+2. In Render, choose **New → Blueprint**.
+3. Connect the repository and select its root `render.yaml`.
+4. Apply the Blueprint and wait for the health check to pass.
+
+Render builds the root `Dockerfile` automatically. After deployment, the same URL serves both the website and API:
+
+```text
+https://azurerecall.onrender.com/
+https://azurerecall.onrender.com/api/health/
+https://azurerecall.onrender.com/api/decks/
+```
+
+The entrypoint runs migrations and the repeatable seed command whenever the container starts. Render's free filesystem is temporary, but that is safe for the current read-only application because SQLite is recreated with the same version-controlled cards. Changes made manually through Django admin will not persist across restarts.
+
+To build and test the production image locally when Docker is available:
+
+```bash
+docker build -t azurerecall .
+docker run --rm -p 8000:10000 \
+  -e DJANGO_SECRET_KEY=local-docker-secret \
+  -e DJANGO_DEBUG=True \
+  -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
+  azurerecall
+```
+
+Then open `http://localhost:8000`.
